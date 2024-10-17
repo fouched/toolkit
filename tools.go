@@ -15,7 +15,7 @@ const randomStringSource = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 // Tools is the type used to instantiate this module
 // Any variable of this type will have access to all methods with the receiver *Tools
-// See https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types/Common_types
+// Also see https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types/Common_types
 type Tools struct {
 	MaxFileSize      int64
 	AllowedFileTypes []string
