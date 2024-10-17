@@ -33,6 +33,8 @@ var uploadTests = []struct {
 }
 
 func TestTools_UploadFiles(t *testing.T) {
+	_ = os.MkdirAll("./testdata/uploads", 0755)
+
 	for _, e := range uploadTests {
 		// set up a pipe to avoid buffering
 		pr, pw := io.Pipe()
@@ -83,9 +85,6 @@ func TestTools_UploadFiles(t *testing.T) {
 			if _, err := os.Stat(fmt.Sprintf("./testdata/uploads/%s", uploadedFiles[0].NewFileName)); os.IsNotExist(err) {
 				t.Errorf("%s: expected file to exist: %s", e.name, err.Error())
 			}
-
-			// clean up
-			_ = os.Remove(fmt.Sprintf("./testdata/uploads/%s", uploadedFiles[0].NewFileName))
 		}
 
 		if !e.errorExpected && err != nil {
@@ -94,12 +93,16 @@ func TestTools_UploadFiles(t *testing.T) {
 
 		wg.Wait()
 	}
+
+	// clean up
+	_ = os.RemoveAll("./testdata/uploads")
 }
 
 func TestTools_UploadOneFile(t *testing.T) {
 	// set up a pipe to avoid buffering
 	pr, pw := io.Pipe()
 	writer := multipart.NewWriter(pw)
+	_ = os.MkdirAll("./testdata/uploads", 0755)
 
 	go func() {
 		defer writer.Close()
@@ -143,6 +146,24 @@ func TestTools_UploadOneFile(t *testing.T) {
 	}
 
 	// clean up
-	_ = os.Remove(fmt.Sprintf("./testdata/uploads/%s", uploadedFiles.NewFileName))
+	_ = os.RemoveAll("./testdata/uploads")
 
+}
+
+func TestTools_CreateDirIfNotExist(t *testing.T) {
+	var testTool Tools
+
+	err := testTool.CreateDirIfNotExist("./testdata/myDir/foo")
+	if err != nil {
+		t.Error(err)
+	}
+
+	// check that it still works if dir exits
+	err = testTool.CreateDirIfNotExist("./testdata/myDir/foo")
+	if err != nil {
+		t.Error(err)
+	}
+
+	// clean up
+	_ = os.RemoveAll("./testdata/myDir/foo")
 }
