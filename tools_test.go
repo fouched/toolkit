@@ -8,6 +8,7 @@ import (
 	"image"
 	"image/png"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +16,40 @@ import (
 	"sync"
 	"testing"
 )
+
+type RoundTripFunc func(req *http.Request) *http.Response
+
+func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req), nil
+}
+
+func NewTestClient(fn RoundTripFunc) *http.Client {
+	return &http.Client{
+		Transport: fn,
+	}
+}
+
+func TestTools_PushJSONToRemote(t *testing.T) {
+	client := NewTestClient(func(req *http.Request) *http.Response {
+		// Test request parameters
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(bytes.NewBufferString("ok")),
+			Header:     make(http.Header),
+		}
+	})
+
+	var testTools Tools
+	var foo struct {
+		Bar string `json:"bar"`
+	}
+	foo.Bar = "bar"
+
+	_, _, err := testTools.PushJSONToRemote("https://example.com/some/path", foo, client)
+	if err != nil {
+		t.Error("failed to call remote url:", err)
+	}
+}
 
 func TestTools_RandomString(t *testing.T) {
 	var testTools Tools
@@ -99,7 +134,10 @@ func TestTools_UploadFiles(t *testing.T) {
 	}
 
 	// clean up
-	_ = os.RemoveAll("./testdata/uploads")
+	err := os.RemoveAll("./testdata/uploads")
+	if err != nil {
+		log.Println("could not clean up", err)
+	}
 }
 
 func TestTools_UploadOneFile(t *testing.T) {
@@ -155,15 +193,15 @@ func TestTools_UploadOneFile(t *testing.T) {
 }
 
 func TestTools_CreateDirIfNotExist(t *testing.T) {
-	var testTool Tools
+	var testTools Tools
 
-	err := testTool.CreateDirIfNotExist("./testdata/myDir/foo")
+	err := testTools.CreateDirIfNotExist("./testdata/myDir/foo")
 	if err != nil {
 		t.Error(err)
 	}
 
 	// check that it still works if dir exits
-	err = testTool.CreateDirIfNotExist("./testdata/myDir/foo")
+	err = testTools.CreateDirIfNotExist("./testdata/myDir/foo")
 	if err != nil {
 		t.Error(err)
 	}
@@ -186,10 +224,10 @@ var slugTests = []struct {
 }
 
 func TestTools_Slugify(t *testing.T) {
-	var testTool Tools
+	var testTools Tools
 
 	for _, e := range slugTests {
-		slug, err := testTool.Slugify(e.s)
+		slug, err := testTools.Slugify(e.s)
 		if err != nil && !e.errorExpected {
 			t.Errorf("%s:error received when none expected: %s", e.name, err.Error())
 		}
@@ -204,9 +242,9 @@ func TestTools_DownloadStaticFile(t *testing.T) {
 	rr := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/", nil)
 
-	var testTool Tools
+	var testTools Tools
 
-	testTool.DownloadStaticFile(rr, req, "./testdata", "pic.jpg", "puppy.jpg")
+	testTools.DownloadStaticFile(rr, req, "./testdata", "pic.jpg", "puppy.jpg")
 
 	res := rr.Result()
 	defer res.Body.Close()
@@ -247,14 +285,14 @@ var jsonTests = []struct {
 }
 
 func TestTools_ReadJSON(t *testing.T) {
-	var testTool Tools
+	var testTools Tools
 
 	for _, e := range jsonTests {
 		// set max file size
-		testTool.MaxJSONSize = e.maxSize
+		testTools.MaxJSONSize = e.maxSize
 
 		// allow/disallow unknown fields
-		testTool.AllowUnknownFields = e.allowUnknown
+		testTools.AllowUnknownFields = e.allowUnknown
 
 		// declare a variable to read decoded json into
 		var decodedJSON struct {
@@ -270,7 +308,7 @@ func TestTools_ReadJSON(t *testing.T) {
 		// create a recorder
 		rr := httptest.NewRecorder()
 
-		err = testTool.ReadJSON(rr, req, &decodedJSON)
+		err = testTools.ReadJSON(rr, req, &decodedJSON)
 
 		if e.errorExpected && err == nil {
 			t.Errorf("%s: error expected but none received", e.name)
@@ -285,7 +323,7 @@ func TestTools_ReadJSON(t *testing.T) {
 }
 
 func TestTools_WriteJSON(t *testing.T) {
-	var testTool Tools
+	var testTools Tools
 
 	rr := httptest.NewRecorder()
 	payload := JSONResponse{
@@ -296,7 +334,7 @@ func TestTools_WriteJSON(t *testing.T) {
 	headers := make(http.Header)
 	headers.Add("FOO", "BAR")
 
-	err := testTool.WriteJSON(rr, http.StatusOK, payload, headers)
+	err := testTools.WriteJSON(rr, http.StatusOK, payload, headers)
 	if err != nil {
 		t.Errorf("failed to write JSON: %v", err)
 	}
