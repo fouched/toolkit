@@ -40,6 +40,7 @@ func (t *Tools) RandomString(n int) string {
 
 // UploadedFile is a struct used to save information about an uploaded file
 type UploadedFile struct {
+	Key              string
 	NewFileName      string
 	OriginalFileName string
 	FileSize         int64
@@ -85,7 +86,7 @@ func (t *Tools) UploadFiles(r *http.Request, uploadDir string, rename ...bool) (
 		return nil, errors.New("uploaded file too big")
 	}
 
-	for _, fHeaders := range r.MultipartForm.File {
+	for key, fHeaders := range r.MultipartForm.File {
 		for _, hdr := range fHeaders {
 			// we will be deferring stuff below, so
 			// since we are in a loop in-line a func
@@ -133,6 +134,7 @@ func (t *Tools) UploadFiles(r *http.Request, uploadDir string, rename ...bool) (
 					uploadedFile.NewFileName = hdr.Filename
 				}
 				uploadedFile.OriginalFileName = hdr.Filename
+				uploadedFile.Key = key
 
 				var outfile *os.File
 				defer outfile.Close()
