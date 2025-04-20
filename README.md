@@ -16,4 +16,4 @@ The included tools are:
 
 ## Installation
 
-`go get -u github.com/fouched/toolkit`
+`go get -u github.com/fouched/toolkitv2`
