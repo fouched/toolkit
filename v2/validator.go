@@ -49,10 +49,9 @@ func (v *Validation) Has(field string, r *http.Request) bool {
 }
 
 // Required checks a variadic list of Field and adds an error if a field is blank
-func (v *Validation) Required(r *http.Request, fields ...Field) {
+func (v *Validation) Required(fields ...Field) {
 	for _, field := range fields {
-		value := r.Form.Get(field.Name)
-		if strings.TrimSpace(value) == "" {
+		if strings.TrimSpace(field.Value) == "" {
 			v.AddError(field.Name, fmt.Sprintf("%s cannot be blank", field.Label))
 		}
 	}
