@@ -68,7 +68,7 @@ func (v *Validation) Check(ok bool, key, message string) {
 // IsLength checks if a field is at least a specific length and adds an error if result is false
 func (v *Validation) IsLength(field Field, length int) {
 	if len(strings.TrimSpace(field.Value)) < length {
-		v.AddError(field.Name, fmt.Sprintf("%s must be at least %d characters", field.Name, length))
+		v.AddError(field.Name, fmt.Sprintf("%s must be at least %d characters", field.Label, length))
 	}
 }
 
