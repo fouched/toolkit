@@ -13,6 +13,7 @@ The included tools are:
 - [X] Post JSON to a remote service
 - [X] Create a directory, including all parent directories, if it does not already exist
 - [X] Create a URL safe slug from a string
+- [X] Validation utilities
 
 ## Installation
 
