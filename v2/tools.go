@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -334,4 +335,27 @@ func (t *Tools) PushJSONToRemote(uri string, data interface{}, client ...*http.C
 
 	// send response back
 	return response, response.StatusCode, nil
+}
+
+// WriteXML takes a response status code and arbitrary data and writes xml to the client
+func (t *Tools) WriteXML(w http.ResponseWriter, status int, data interface{}, headers ...http.Header) error {
+	// in production, we would not use indent
+	out, err := xml.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	if len(headers) > 0 {
+		for key, value := range headers[0] {
+			w.Header()[key] = value
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/xml")
+	w.WriteHeader(status)
+	_, err = w.Write(out)
+	if err != nil {
+		return err
+	}
+	return nil
 }
