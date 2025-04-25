@@ -15,6 +15,7 @@ The included tools are:
 - [X] Create a directory, including all parent directories, if it does not already exist
 - [X] Create a URL safe slug from a string
 - [X] Validation utilities
+- [X] Encrypt and Decrypt capability
 
 ## Installation
 
