@@ -14,6 +14,7 @@ type TimeOnly struct {
 	Time *time.Time
 }
 
+// MarshalJSON implements the json.Marshaler interface and will be called automatically
 func (t *TimeOnly) MarshalJSON() ([]byte, error) {
 	if t.Time == nil {
 		return json.Marshal(nil)
@@ -21,6 +22,7 @@ func (t *TimeOnly) MarshalJSON() ([]byte, error) {
 	return json.Marshal(t.Time.Format(timeOnlyLayout))
 }
 
+// UnmarshalJSON implements the json.Marshaler interface and will be called automatically
 func (t *TimeOnly) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "null" || s == "" {
@@ -38,6 +40,7 @@ func (t *TimeOnly) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Value implements the driver.Value interface and will be called automatically
 func (t *TimeOnly) Value() (driver.Value, error) {
 	if t.Time == nil {
 		return nil, nil
@@ -45,6 +48,7 @@ func (t *TimeOnly) Value() (driver.Value, error) {
 	return t.Time.Format(timeOnlyLayout), nil
 }
 
+// Scan implements the sql.Scanner interface and will be called automatically
 func (t *TimeOnly) Scan(value interface{}) error {
 	if value == nil {
 		t.Time = nil
