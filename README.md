@@ -16,6 +16,8 @@ The included tools are:
 - [X] Create a URL safe slug from a string
 - [X] Validation utilities
 - [X] Encrypt and Decrypt capability
+- [X] DateOnly struct (type) with JSON and SQL value & scan support
+- [X] TimeOnly struct (type) with JSON and SQL value & scan support
 
 ## Installation
 
