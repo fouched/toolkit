@@ -1,7 +1,5 @@
 # Toolkit
 
-A simple example of how to create a reusable Go module with commonly used tools.
-
 The included tools are:
 
 - [X] Read JSON
