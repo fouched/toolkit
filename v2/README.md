@@ -21,3 +21,4 @@ The included tools are:
 ## Installation
 
 `go get -u github.com/fouched/toolkit/v2`
+
