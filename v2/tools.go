@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -302,6 +303,18 @@ func (t *Tools) ErrorJSON(w http.ResponseWriter, err error, status ...int) error
 	payload.Message = err.Error()
 
 	return t.WriteJSON(w, statusCode, payload)
+}
+
+// HandleError wraps ErrorJSON - outputs the error JSON or writes to the logger on failure
+func (t *Tools) HandleError(w http.ResponseWriter, err error, logger *log.Logger) bool {
+	if err == nil {
+		return false
+	}
+
+	if jsonErr := t.ErrorJSON(w, err); jsonErr != nil {
+		logger.Printf("Error writing JSON response: %v", jsonErr)
+	}
+	return true
 }
 
 // PushJSONToRemote posts arbitrary data to some URL as JSON, and returns the response, status code, and error, if any
