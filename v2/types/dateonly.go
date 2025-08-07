@@ -90,3 +90,11 @@ func (d DateOnly) ToTime() time.Time {
 	}
 	return *d.Time
 }
+
+func (d DateOnly) Add(dur time.Duration) DateOnly {
+	if d.Time == nil {
+		return DateOnly{}
+	}
+	t := d.Time.Add(dur)
+	return DateOnly{Time: &t}
+}
