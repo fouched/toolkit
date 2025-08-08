@@ -15,7 +15,7 @@ type DateOnly struct {
 }
 
 // MarshalJSON implements the json.Marshaler interface and will be called automatically
-func (d DateOnly) MarshalJSON() ([]byte, error) {
+func (d *DateOnly) MarshalJSON() ([]byte, error) {
 	if d.Time == nil {
 		return json.Marshal(nil)
 	}
@@ -23,7 +23,9 @@ func (d DateOnly) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON implements the json.Marshaler interface and will be called automatically
-func (d DateOnly) UnmarshalJSON(b []byte) error {
+// This method uses a pointer receiver because it modifies the internal state.
+// Using a value receiver would only update a copy, leaving the original unchanged.
+func (d *DateOnly) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
 	if s == "null" || s == "" {
 		d.Time = nil
@@ -38,7 +40,7 @@ func (d DateOnly) UnmarshalJSON(b []byte) error {
 }
 
 // Value implements the driver.Value interface and will be called automatically
-func (d DateOnly) Value() (driver.Value, error) {
+func (d *DateOnly) Value() (driver.Value, error) {
 	if d.Time == nil {
 		return nil, nil
 	}
@@ -46,7 +48,7 @@ func (d DateOnly) Value() (driver.Value, error) {
 }
 
 // Scan implements the sql.Scanner interface and will be called automatically
-func (d DateOnly) Scan(value interface{}) error {
+func (d *DateOnly) Scan(value interface{}) error {
 	if value == nil {
 		d.Time = nil
 		return nil
@@ -66,32 +68,32 @@ func (d DateOnly) Scan(value interface{}) error {
 	return nil
 }
 
-func (d DateOnly) IsZero() bool {
+func (d *DateOnly) IsZero() bool {
 	return d.Time == nil || d.Time.IsZero()
 }
 
-func (d DateOnly) After(other DateOnly) bool {
+func (d *DateOnly) After(other DateOnly) bool {
 	if d.Time == nil || other.Time == nil {
 		return false // or panic/log depending on your domain
 	}
 	return d.Time.After(*other.Time)
 }
 
-func (d DateOnly) Before(other DateOnly) bool {
+func (d *DateOnly) Before(other DateOnly) bool {
 	if d.Time == nil || other.Time == nil {
 		return false
 	}
 	return d.Time.Before(*other.Time)
 }
 
-func (d DateOnly) ToTime() time.Time {
+func (d *DateOnly) ToTime() time.Time {
 	if d.Time == nil {
 		return time.Time{}
 	}
 	return *d.Time
 }
 
-func (d DateOnly) Add(dur time.Duration) DateOnly {
+func (d *DateOnly) Add(dur time.Duration) DateOnly {
 	if d.Time == nil {
 		return DateOnly{}
 	}
