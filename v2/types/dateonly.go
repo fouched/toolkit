@@ -14,6 +14,12 @@ type DateOnly struct {
 	Time *time.Time
 }
 
+// NewDateOnly returns a DateOnly value normalized to midnight UTC.
+func NewDateOnly(t time.Time) DateOnly {
+	date := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+	return DateOnly{Time: &date}
+}
+
 // MarshalJSON implements the json.Marshaler interface and will be called automatically
 func (d *DateOnly) MarshalJSON() ([]byte, error) {
 	if d.Time == nil {
