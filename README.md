@@ -3,7 +3,7 @@ A lightweight utility library for Go projects, designed to simplify common tasks
 
 ## ✨ Features
 
-### 📦 Core Utilities
+### ⚙️ Core Utilities
 - [X] Read JSON
 - [X] Write JSON
 - [X] Error JSON takes an error and optionally a status code, and sends a JSON error message
