@@ -100,3 +100,17 @@ func (d *DateOnly) Add(dur time.Duration) DateOnly {
 	t := d.Time.Add(dur)
 	return DateOnly{Time: &t}
 }
+
+func (d *DateOnly) StartOfDay() time.Time {
+	if d.Time == nil {
+		return time.Time{}
+	}
+	return time.Date(d.Time.Year(), d.Time.Month(), d.Time.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+func (d *DateOnly) EndOfDay() time.Time {
+	if d.Time == nil {
+		return time.Time{}
+	}
+	return time.Date(d.Time.Year(), d.Time.Month(), d.Time.Day(), 23, 59, 59, 999, time.UTC)
+}
