@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -15,9 +14,9 @@ type DateOnly struct {
 }
 
 // NewDateOnly returns a DateOnly value normalized to midnight UTC.
-func NewDateOnly(t time.Time) DateOnly {
+func NewDateOnly(t time.Time) *DateOnly {
 	date := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
-	return DateOnly{Time: &date}
+	return &DateOnly{Time: &date}
 }
 
 // MarshalJSON implements the json.Marshaler interface and will be called automatically
@@ -32,7 +31,10 @@ func (d *DateOnly) MarshalJSON() ([]byte, error) {
 // This method uses a pointer receiver because it modifies the internal state.
 // Using a value receiver would only update a copy, leaving the original unchanged.
 func (d *DateOnly) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), `"`)
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
 	if s == "null" || s == "" {
 		d.Time = nil
 		return nil
@@ -78,14 +80,14 @@ func (d *DateOnly) IsZero() bool {
 	return d.Time == nil || d.Time.IsZero()
 }
 
-func (d *DateOnly) After(other DateOnly) bool {
+func (d *DateOnly) After(other *DateOnly) bool {
 	if d.Time == nil || other.Time == nil {
 		return false // or panic/log depending on your domain
 	}
 	return d.Time.After(*other.Time)
 }
 
-func (d *DateOnly) Before(other DateOnly) bool {
+func (d *DateOnly) Before(other *DateOnly) bool {
 	if d.Time == nil || other.Time == nil {
 		return false
 	}
@@ -99,12 +101,12 @@ func (d *DateOnly) ToTime() time.Time {
 	return *d.Time
 }
 
-func (d *DateOnly) Add(dur time.Duration) DateOnly {
+func (d *DateOnly) Add(dur time.Duration) *DateOnly {
 	if d.Time == nil {
-		return DateOnly{}
+		return nil
 	}
 	t := d.Time.Add(dur)
-	return DateOnly{Time: &t}
+	return &DateOnly{Time: &t}
 }
 
 func (d *DateOnly) StartOfDay() time.Time {
@@ -119,4 +121,18 @@ func (d *DateOnly) EndOfDay() time.Time {
 		return time.Time{}
 	}
 	return time.Date(d.Time.Year(), d.Time.Month(), d.Time.Day(), 23, 59, 59, 999, time.UTC)
+}
+
+func (d *DateOnly) String() string {
+	if d.Time == nil {
+		return "null"
+	}
+	return d.Time.Format(dateFormat)
+}
+
+func (d *DateOnly) Equal(other *DateOnly) bool {
+	if d.Time == nil || other.Time == nil {
+		return false
+	}
+	return d.Time.Equal(*other.Time)
 }
