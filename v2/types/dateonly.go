@@ -77,32 +77,35 @@ func (d *DateOnly) Scan(value interface{}) error {
 }
 
 func (d *DateOnly) IsZero() bool {
+	if d == nil {
+		return true
+	}
 	return d.Time == nil || d.Time.IsZero()
 }
 
 func (d *DateOnly) After(other *DateOnly) bool {
-	if d.Time == nil || other.Time == nil {
-		return false // or panic/log depending on your domain
+	if d == nil || d.Time == nil || other == nil || other.Time == nil {
+		return false
 	}
 	return d.Time.After(*other.Time)
 }
 
 func (d *DateOnly) Before(other *DateOnly) bool {
-	if d.Time == nil || other.Time == nil {
+	if d == nil || d.Time == nil || other == nil || other.Time == nil {
 		return false
 	}
 	return d.Time.Before(*other.Time)
 }
 
 func (d *DateOnly) ToTime() time.Time {
-	if d.Time == nil {
+	if d == nil || d.Time == nil {
 		return time.Time{}
 	}
 	return *d.Time
 }
 
 func (d *DateOnly) Add(dur time.Duration) *DateOnly {
-	if d.Time == nil {
+	if d == nil || d.Time == nil {
 		return nil
 	}
 	t := d.Time.Add(dur)
@@ -110,28 +113,28 @@ func (d *DateOnly) Add(dur time.Duration) *DateOnly {
 }
 
 func (d *DateOnly) StartOfDay() time.Time {
-	if d.Time == nil {
+	if d == nil || d.Time == nil {
 		return time.Time{}
 	}
 	return time.Date(d.Time.Year(), d.Time.Month(), d.Time.Day(), 0, 0, 0, 0, time.UTC)
 }
 
 func (d *DateOnly) EndOfDay() time.Time {
-	if d.Time == nil {
+	if d == nil || d.Time == nil {
 		return time.Time{}
 	}
 	return time.Date(d.Time.Year(), d.Time.Month(), d.Time.Day(), 23, 59, 59, 999, time.UTC)
 }
 
 func (d *DateOnly) String() string {
-	if d.Time == nil {
+	if d == nil || d.Time == nil {
 		return "null"
 	}
 	return d.Time.Format(dateFormat)
 }
 
 func (d *DateOnly) Equal(other *DateOnly) bool {
-	if d.Time == nil || other.Time == nil {
+	if d == nil || d.Time == nil || other == nil || other.Time == nil {
 		return false
 	}
 	return d.Time.Equal(*other.Time)
