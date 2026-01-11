@@ -30,14 +30,28 @@ type Tools struct {
 
 // RandomString returns a string of random characters of length n
 func (t *Tools) RandomString(n int) string {
-	s, r := make([]rune, n), []rune(randomStringSource)
-	for i := range s {
-		p, _ := rand.Prime(rand.Reader, len(r))
-		x, y := p.Uint64(), uint64(len(r))
-		s[i] = r[x%y]
+	// old expensive version for reference
+	//s, r := make([]rune, n), []rune(randomStringSource)
+	//for i := range s {
+	//	p, _ := rand.Prime(rand.Reader, len(r))
+	//	x, y := p.Uint64(), uint64(len(r))
+	//	s[i] = r[x%y]
+	//}
+	//
+	//return string(s)
+
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
 	}
 
-	return string(s)
+	for i := range b {
+		b[i] = randomStringSource[int(b[i])%len(randomStringSource)]
+	}
+
+	return string(b)
+
 }
 
 // UploadedFile is a struct used to save information about an uploaded file
