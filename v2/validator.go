@@ -32,7 +32,7 @@ func (e ValidationError) Error() string {
 
 // Validator creates an instance of a Validation based on form values.
 // You can pass nil to this constructor to use the validation functions without an Http form
-func (t *Tools) Validator(data url.Values) *Validation {
+func Validator(data url.Values) *Validation {
 	return &Validation{
 		Data:   data,
 		Errors: make(map[string]string),
