@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -29,18 +30,33 @@ type Tools struct {
 
 // RandomString returns a string of random characters of length n
 func (t *Tools) RandomString(n int) string {
-	s, r := make([]rune, n), []rune(randomStringSource)
-	for i := range s {
-		p, _ := rand.Prime(rand.Reader, len(r))
-		x, y := p.Uint64(), uint64(len(r))
-		s[i] = r[x%y]
+	// old expensive version for reference
+	//s, r := make([]rune, n), []rune(randomStringSource)
+	//for i := range s {
+	//	p, _ := rand.Prime(rand.Reader, len(r))
+	//	x, y := p.Uint64(), uint64(len(r))
+	//	s[i] = r[x%y]
+	//}
+	//
+	//return string(s)
+
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
 	}
 
-	return string(s)
+	for i := range b {
+		b[i] = randomStringSource[int(b[i])%len(randomStringSource)]
+	}
+
+	return string(b)
+
 }
 
 // UploadedFile is a struct used to save information about an uploaded file
 type UploadedFile struct {
+	Key              string
 	NewFileName      string
 	OriginalFileName string
 	FileSize         int64
@@ -86,7 +102,7 @@ func (t *Tools) UploadFiles(r *http.Request, uploadDir string, rename ...bool) (
 		return nil, errors.New("uploaded file too big")
 	}
 
-	for _, fHeaders := range r.MultipartForm.File {
+	for key, fHeaders := range r.MultipartForm.File {
 		for _, hdr := range fHeaders {
 			// we will be deferring stuff below, so
 			// since we are in a loop in-line a func
@@ -134,6 +150,7 @@ func (t *Tools) UploadFiles(r *http.Request, uploadDir string, rename ...bool) (
 					uploadedFile.NewFileName = hdr.Filename
 				}
 				uploadedFile.OriginalFileName = hdr.Filename
+				uploadedFile.Key = key
 
 				var outfile *os.File
 				defer outfile.Close()
@@ -193,11 +210,10 @@ func (t *Tools) Slugify(s string) (string, error) {
 // DownloadStaticFile downloads a file tries to force the browser to
 // avoid displaying it in the browser window by setting content disposition.
 // It also allows specification of the display name
-func (t *Tools) DownloadStaticFile(w http.ResponseWriter, r *http.Request, p, file, displayName string) {
-	fp := path.Join(p, file)
+func (t *Tools) DownloadStaticFile(w http.ResponseWriter, r *http.Request, pathName, displayName string) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", displayName))
 
-	http.ServeFile(w, r, fp)
+	http.ServeFile(w, r, pathName)
 }
 
 // JSONResponse is the type used for sending JSON around
@@ -298,9 +314,30 @@ func (t *Tools) ErrorJSON(w http.ResponseWriter, err error, status ...int) error
 
 	var payload JSONResponse
 	payload.Error = true
-	payload.Message = err.Error()
+
+	// If it's a validation error, return structured errors
+	var ve ValidationError
+	if errors.As(err, &ve) {
+		payload.Message = ve.Error()
+		payload.Data = ve.Errors
+	} else {
+		payload.Message = err.Error()
+	}
 
 	return t.WriteJSON(w, statusCode, payload)
+}
+
+// HandleError wraps ErrorJSON - Returns true if error was handled and caller should abort.
+// Outputs the error JSON or writes to the logger on failure
+func (t *Tools) HandleError(w http.ResponseWriter, err error, logger *log.Logger) bool {
+	if err == nil {
+		return false
+	}
+
+	if jsonErr := t.ErrorJSON(w, err); jsonErr != nil {
+		logger.Printf("Error writing JSON response: %v", jsonErr)
+	}
+	return true
 }
 
 // PushJSONToRemote posts arbitrary data to some URL as JSON, and returns the response, status code, and error, if any
@@ -334,4 +371,27 @@ func (t *Tools) PushJSONToRemote(uri string, data interface{}, client ...*http.C
 
 	// send response back
 	return response, response.StatusCode, nil
+}
+
+// WriteXML takes a response status code and arbitrary data and writes xml to the client
+func (t *Tools) WriteXML(w http.ResponseWriter, status int, data interface{}, headers ...http.Header) error {
+	// in production, we would not use indent
+	out, err := xml.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	if len(headers) > 0 {
+		for key, value := range headers[0] {
+			w.Header()[key] = value
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/xml")
+	w.WriteHeader(status)
+	_, err = w.Write(out)
+	if err != nil {
+		return err
+	}
+	return nil
 }
