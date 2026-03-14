@@ -314,7 +314,15 @@ func (t *Tools) ErrorJSON(w http.ResponseWriter, err error, status ...int) error
 
 	var payload JSONResponse
 	payload.Error = true
-	payload.Message = err.Error()
+
+	// If it's a validation error, return structured errors
+	var ve ValidationError
+	if errors.As(err, &ve) {
+		payload.Message = ve.Error()
+		payload.Data = ve.Errors
+	} else {
+		payload.Message = err.Error()
+	}
 
 	return t.WriteJSON(w, statusCode, payload)
 }

@@ -21,6 +21,15 @@ type Field struct {
 	Value string
 }
 
+// ValidationError contains a map structure for validation errors
+type ValidationError struct {
+	Errors map[string]string `json:"errors"`
+}
+
+func (e ValidationError) Error() string {
+	return "validation failed"
+}
+
 // Validator creates an instance of a Validation based on form values.
 // You can pass nil to this constructor to use the validation functions without an Http form
 func (t *Tools) Validator(data url.Values) *Validation {
