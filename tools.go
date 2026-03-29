@@ -334,6 +334,8 @@ func (t *Tools) HasError(w http.ResponseWriter, err error, logger *log.Logger) b
 		return false
 	}
 
+	logger.Println(err)
+	
 	if jsonErr := t.ErrorJSON(w, err); jsonErr != nil {
 		logger.Printf("Error writing JSON response: %v", jsonErr)
 	}
