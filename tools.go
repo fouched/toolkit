@@ -327,17 +327,15 @@ func (t *Tools) ErrorJSON(w http.ResponseWriter, err error, status ...int) error
 	return t.WriteJSON(w, statusCode, payload)
 }
 
-// HasError wraps ErrorJSON - Returns true if error was handled and caller should abort.
+// HandleError wraps ErrorJSON - Returns true if error was handled and caller should abort.
 // Outputs the error JSON or writes to the logger on failure
-func (t *Tools) HasError(w http.ResponseWriter, err error, logger *log.Logger) bool {
+func (t *Tools) HandleError(w http.ResponseWriter, err error) bool {
 	if err == nil {
 		return false
 	}
 
-	logger.Println(err)
-	
 	if jsonErr := t.ErrorJSON(w, err); jsonErr != nil {
-		logger.Printf("Error writing JSON response: %v", jsonErr)
+		log.Printf("Error writing JSON response: %v", jsonErr)
 	}
 	return true
 }

@@ -1,0 +1,70 @@
+package errors
+
+import (
+	"errors"
+	"fmt"
+	"runtime"
+)
+
+type Frame uintptr
+
+func Stack(err error) []Frame {
+	var e *Error
+	if errors.As(err, &e) {
+		frames := make([]Frame, len(e.stack))
+		for i, pc := range e.stack {
+			frames[i] = Frame(pc)
+		}
+		return frames
+	}
+	return nil
+}
+
+// Format implements fmt.Formatter.
+// Supported verbs:
+//
+//	%v  - short file:line
+//	%+v - full file:line with function name
+//	%s  - file:line
+//	%n  - function name only
+func (f Frame) Format(s fmt.State, verb rune) {
+	pc := uintptr(f)
+	fn := runtime.FuncForPC(pc)
+	if fn == nil {
+		fmt.Fprint(s, "unknown")
+		return
+	}
+
+	file, line := fn.FileLine(pc)
+
+	switch verb {
+	case 'v':
+		if s.Flag('+') {
+			// full path + function name
+			fmt.Fprintf(s, "%s\n    %s:%d", fn.Name(), file, line)
+		} else {
+			// short path
+			short := shortFile(file)
+			fmt.Fprintf(s, "%s:%d", short, line)
+		}
+
+	case 's':
+		fmt.Fprintf(s, "%s:%d", file, line)
+
+	case 'n':
+		fmt.Fprint(s, fn.Name())
+
+	default:
+		// fallback
+		fmt.Fprintf(s, "%s:%d", file, line)
+	}
+}
+
+func shortFile(path string) string {
+	for i := len(path) - 1; i >= 0; i-- {
+		if path[i] == '/' {
+			return path[i+1:]
+		}
+	}
+	return path
+}
