@@ -8,6 +8,36 @@ import (
 
 type Frame uintptr
 
+func (f Frame) pc() uintptr {
+	return uintptr(f)
+}
+
+func (f Frame) File() string {
+	fn := runtime.FuncForPC(f.pc())
+	if fn == nil {
+		return "unknown"
+	}
+	file, _ := fn.FileLine(f.pc())
+	return file
+}
+
+func (f Frame) Line() int {
+	fn := runtime.FuncForPC(f.pc())
+	if fn == nil {
+		return 0
+	}
+	_, line := fn.FileLine(f.pc())
+	return line
+}
+
+func (f Frame) Function() string {
+	fn := runtime.FuncForPC(f.pc())
+	if fn == nil {
+		return "unknown"
+	}
+	return fn.Name()
+}
+
 func Stack(err error) []Frame {
 	var e *Error
 	if errors.As(err, &e) {
