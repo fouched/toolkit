@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 	"runtime"
 )
@@ -22,6 +23,18 @@ func Wrap(err error, msg string) error {
 	if err == nil {
 		return nil
 	}
+
+	// If the cause already has a stack, preserve it
+	var e *Error
+	if errors.As(err, &e) {
+		return &Error{
+			msg:   msg,
+			cause: err,
+			stack: e.stack, // <-- preserve deepest stack
+		}
+	}
+
+	// Otherwise capture a new stack
 	return &Error{
 		msg:   msg,
 		cause: err,

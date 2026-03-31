@@ -15,11 +15,11 @@ const (
 	colorCyan   = "\033[36m"
 )
 
+type PrettyDevHandler struct{}
+
 type ErrorHandler struct {
 	slog.Handler
 }
-
-type PrettyDevHandler struct{}
 
 func (h *ErrorHandler) Handle(ctx context.Context, r slog.Record) error {
 	// Build a new record with the same metadata
