@@ -10,6 +10,10 @@ type ErrorHandler struct {
 	slog.Handler
 }
 
+type PrettyDevHandler struct {
+	slog.Handler
+}
+
 func (h *ErrorHandler) Handle(ctx context.Context, r slog.Record) error {
 	// Build a new record with the same metadata
 	newRecord := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
@@ -40,4 +44,27 @@ func (h *ErrorHandler) Handle(ctx context.Context, r slog.Record) error {
 	})
 
 	return h.Handler.Handle(ctx, newRecord)
+}
+
+func (h *PrettyDevHandler) Handle(ctx context.Context, r slog.Record) error {
+	// Print the base record first
+	err := h.Handler.Handle(ctx, r)
+	if err != nil {
+		return err
+	}
+
+	// Now pretty-print the stack if present
+	r.Attrs(func(a slog.Attr) bool {
+		if a.Key == "stack" {
+			if frames, ok := a.Value.Any().([]string); ok {
+				fmt.Println("STACK TRACE:")
+				for _, f := range frames {
+					fmt.Println("  ", f)
+				}
+			}
+		}
+		return true
+	})
+
+	return nil
 }

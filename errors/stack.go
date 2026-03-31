@@ -40,10 +40,10 @@ func (f Frame) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			// full path + function name
-			fmt.Fprintf(s, "%s\n    %s:%d", fn.Name(), file, line)
+			// Single-line full format: func (file:line)
+			fmt.Fprintf(s, "%s (%s:%d)", fn.Name(), file, line)
 		} else {
-			// short path
+			// Short file:line
 			short := shortFile(file)
 			fmt.Fprintf(s, "%s:%d", short, line)
 		}
@@ -55,7 +55,6 @@ func (f Frame) Format(s fmt.State, verb rune) {
 		fmt.Fprint(s, fn.Name())
 
 	default:
-		// fallback
 		fmt.Fprintf(s, "%s:%d", file, line)
 	}
 }
