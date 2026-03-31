@@ -22,18 +22,17 @@ func (h *ErrorHandler) Handle(ctx context.Context, r slog.Record) error {
 	r.Attrs(func(a slog.Attr) bool {
 		if a.Key == "err" {
 			if err, ok := a.Value.Any().(error); ok {
-				// Replace "err" with the error string
+				// Use ONLY the message chain
 				newRecord.Add("err", err.Error())
 
 				// Add formatted stack frames
 				frames := Stack(err)
 				formatted := make([]string, len(frames))
 				for i, pc := range frames {
-					f := pc
+					f := Frame(pc)
 					formatted[i] = fmt.Sprintf("%+v", f)
 				}
 				newRecord.Add("stack", formatted)
-
 				return true
 			}
 		}
@@ -47,13 +46,12 @@ func (h *ErrorHandler) Handle(ctx context.Context, r slog.Record) error {
 }
 
 func (h *PrettyDevHandler) Handle(ctx context.Context, r slog.Record) error {
-	// Print the base record first
-	err := h.Handler.Handle(ctx, r)
-	if err != nil {
+	// First let the wrapped handler print the base log line
+	if err := h.Handler.Handle(ctx, r); err != nil {
 		return err
 	}
 
-	// Now pretty-print the stack if present
+	// Now inspect the record AFTER ErrorHandler has rewritten it
 	r.Attrs(func(a slog.Attr) bool {
 		if a.Key == "stack" {
 			if frames, ok := a.Value.Any().([]string); ok {
