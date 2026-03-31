@@ -55,16 +55,10 @@ func (e *Error) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			// Print this error's message
-			fmt.Fprint(s, e.msg)
+			// Print the full message chain
+			fmt.Fprint(s, e.Error())
 
-			// Print the wrapped error chain
-			if e.cause != nil {
-				fmt.Fprint(s, ": ")
-				fmt.Fprintf(s, "%+v", e.cause)
-			}
-
-			// Print this error's stack frames
+			// Print only THIS error's stack
 			for _, pc := range e.stack {
 				f := Frame(pc)
 				fmt.Fprintf(s, "\n  at %+v", f)
