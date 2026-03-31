@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"fmt"
 	"runtime"
 )
 
@@ -48,6 +49,32 @@ func (e *Error) Error() string {
 
 func (e *Error) Unwrap() error {
 	return e.cause
+}
+
+func (e *Error) Format(s fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if s.Flag('+') {
+			// Print this error's message
+			fmt.Fprint(s, e.msg)
+
+			// Print the wrapped error chain
+			if e.cause != nil {
+				fmt.Fprint(s, ": ")
+				fmt.Fprintf(s, "%+v", e.cause)
+			}
+
+			// Print this error's stack frames
+			for _, pc := range e.stack {
+				f := Frame(pc)
+				fmt.Fprintf(s, "\n  at %+v", f)
+			}
+			return
+		}
+		fallthrough
+	default:
+		fmt.Fprint(s, e.Error())
+	}
 }
 
 func callers() []uintptr {
