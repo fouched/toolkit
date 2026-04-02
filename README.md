@@ -29,7 +29,7 @@ Key capabilities
 - [X] Pretty stack formatting with %+v
 - [X] Drop‑in compatibility with errors.Is and errors.As
 
-#### Example
+#### Examples
 ```go
 if err != nil {
     return faults.Wrap(err, "repo: failed to insert user")
