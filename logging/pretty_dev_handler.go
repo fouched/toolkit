@@ -42,16 +42,19 @@ func (h *PrettyDevHandler) Handle(ctx context.Context, r slog.Record) error {
 
 	// ATTRIBUTES
 	r.Attrs(func(a slog.Attr) bool {
-		switch a.Key {
-		case "err":
+		if a.Key == "err" {
 			if err, ok := a.Value.Any().(error); ok {
-				printPrettyError(err)
+				// Print error as a single line (production-aligned)
+				fmt.Printf("  err=%s\n", err.Error())
+
+				// Pretty stack trace
+				printPrettyStack(err)
 				return true
 			}
-
-		default:
-			fmt.Printf("  %s=%v\n", a.Key, a.Value.Any())
 		}
+
+		// Normal attribute
+		fmt.Printf("  %s=%v\n", a.Key, a.Value.Any())
 		return true
 	})
 
@@ -68,39 +71,20 @@ func (h *PrettyDevHandler) WithGroup(name string) slog.Handler {
 }
 
 // ------------------------------------------------------------
-// Pretty error rendering (layer-aware)
+// Pretty stack trace (natural order)
 // ------------------------------------------------------------
 
-func printPrettyError(err error) {
-	fmt.Printf("  %serr:%s\n", colorRed, colorReset)
-
-	parts := strings.Split(err.Error(), ": ")
-
+func printPrettyStack(err error) {
 	frames := faults.Stack(err)
-
-	// Reverse frames so they align with error segments
-	for i, j := 0, len(frames)-1; i < j; i, j = i+1, j-1 {
-		frames[i], frames[j] = frames[j], frames[i]
+	if len(frames) == 0 {
+		return
 	}
 
-	for i, p := range parts {
-		var prefix string
+	fmt.Printf("  %sstack:%s\n", colorCyan, colorReset)
 
-		if i < len(frames) {
-			f := faults.Frame(frames[i])
-			prefix = prefixForPath(f.File())
-		}
-
-		fmt.Printf("    %s%s%s\n", prefix, p, colorReset)
-	}
-
-	// Stack trace
-	if len(frames) > 0 {
-		fmt.Printf("  %sstack:%s\n", colorCyan, colorReset)
-		for _, pc := range frames {
-			f := faults.Frame(pc)
-			fmt.Printf("    %s:%d  %s\n", f.File(), f.Line(), f.Function())
-		}
+	for _, pc := range frames {
+		f := faults.Frame(pc)
+		fmt.Printf("    %s:%d  %s\n", f.File(), f.Line(), f.Function())
 	}
 }
 
