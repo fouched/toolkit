@@ -2,6 +2,26 @@ package logging
 
 import "log/slog"
 
+type layerDef struct {
+	name   string
+	needle string
+}
+
+var layers = []layerDef{
+	{"handlers", "/handlers/"},
+	{"services", "/services/"},
+	{"service", "/service/"},
+	{"repo", "/repo/"},
+	{"repository", "/repository/"},
+	{"repositories", "/repositories/"},
+	{"store", "/store/"},
+	{"persistence", "/persistence/"},
+	{"domain", "/domain/"},
+	{"usecase", "/usecase/"},
+	{"http", "/http/"},
+	{"api", "/api/"},
+}
+
 const (
 	colorReset   = "\033[0m"
 	colorRed     = "\033[31m"

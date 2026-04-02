@@ -78,7 +78,7 @@ func (h *PrettyDevHandler) WithGroup(name string) slog.Handler {
 }
 
 // ------------------------------------------------------------
-// Prefix logic
+// Prefix logic (optimized)
 // ------------------------------------------------------------
 
 func callerFrame() (runtime.Frame, bool) {
@@ -95,26 +95,9 @@ func callerFrame() (runtime.Frame, bool) {
 func prefixForFrame(f runtime.Frame) string {
 	path := f.File
 
-	// List of known layer directories
-	layers := []string{
-		"handlers",
-		"services",
-		"service",
-		"repo",
-		"repository",
-		"repositories",
-		"store",
-		"persistence",
-		"domain",
-		"usecase",
-		"http",
-		"api",
-	}
-
-	for _, layer := range layers {
-		needle := "/" + layer + "/"
-		if strings.Contains(path, needle) {
-			return colorForLayer(layer) + layer + " → " + colorReset
+	for _, l := range layers {
+		if strings.Contains(path, l.needle) {
+			return colorForLayer(l.name) + l.name + " → " + colorReset
 		}
 	}
 
