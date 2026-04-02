@@ -74,17 +74,18 @@ func (h *PrettyDevHandler) WithGroup(name string) slog.Handler {
 func printPrettyError(err error) {
 	fmt.Printf("  %serr:%s\n", colorRed, colorReset)
 
-	// Split error chain
 	parts := strings.Split(err.Error(), ": ")
 
-	// Stack frames (top to bottom)
 	frames := faults.Stack(err)
 
-	// Print each error segment with the correct layer prefix
+	// Reverse frames so they align with error segments
+	for i, j := 0, len(frames)-1; i < j; i, j = i+1, j-1 {
+		frames[i], frames[j] = frames[j], frames[i]
+	}
+
 	for i, p := range parts {
 		var prefix string
 
-		// Match segment to frame if possible
 		if i < len(frames) {
 			f := faults.Frame(frames[i])
 			prefix = prefixForPath(f.File())
@@ -93,7 +94,7 @@ func printPrettyError(err error) {
 		fmt.Printf("    %s%s%s\n", prefix, p, colorReset)
 	}
 
-	// Print stack trace
+	// Stack trace
 	if len(frames) > 0 {
 		fmt.Printf("  %sstack:%s\n", colorCyan, colorReset)
 		for _, pc := range frames {
