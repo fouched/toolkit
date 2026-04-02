@@ -6,6 +6,7 @@ Built for clarity, composability, and long‑term maintainability.
 ## ✨ Features
 
 ### ⚙️ Core Utilities
+
 - [X] Read & write JSON
 - [X] Error JSON responses with optional status codes
 - [X] Unified error handling helper (HandleError)
@@ -19,6 +20,7 @@ Built for clarity, composability, and long‑term maintainability.
 - [X] Encryption & decryption utilities
 
 🧱 Faults — Structured Errors With Stack Traces
+
 Toolkit v2 includes a lightweight but powerful error system designed for real‑world services.
 Key capabilities
 - [X] Automatic stack capture at the point of failure
@@ -47,6 +49,7 @@ return faults.Annotate(err, "service: user creation failed")
 ```
 
 🖨️ Pretty Logging Integration
+
 Toolkit v2 includes development‑friendly slog handlers that automatically detect faults.Error values and print:
 - [X] the full error chain
 - [X] the captured stack trace
@@ -62,7 +65,8 @@ stack:
 ```
 
 🕒 Temporal Types
-Toolkit v2 includes two production‑ready temporal primitives:
+
+Includes two production‑ready temporal primitives:
 DateOnly
 TimeOnly
 Both provide:
