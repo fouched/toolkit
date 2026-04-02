@@ -45,17 +45,7 @@ func (h *PrettyDevHandler) Handle(ctx context.Context, r slog.Record) error {
 		switch a.Key {
 		case "err":
 			if err, ok := a.Value.Any().(error); ok {
-				fmt.Printf("  %serr:%s %s\n", colorRed, colorReset, err.Error())
-
-				// Stack
-				frames := faults.Stack(err)
-				if len(frames) > 0 {
-					fmt.Printf("  %sstack:%s\n", colorCyan, colorReset)
-					for _, pc := range frames {
-						f := faults.Frame(pc)
-						fmt.Printf("    %s:%d  %s\n", f.File(), f.Line(), f.Function())
-					}
-				}
+				printPrettyError(err)
 				return true
 			}
 
@@ -78,12 +68,47 @@ func (h *PrettyDevHandler) WithGroup(name string) slog.Handler {
 }
 
 // ------------------------------------------------------------
+// Pretty error rendering
+// ------------------------------------------------------------
+
+func printPrettyError(err error) {
+	fmt.Printf("  %serr:%s\n", colorRed, colorReset)
+
+	// Split error chain on ": "
+	parts := strings.Split(err.Error(), ": ")
+
+	for _, p := range parts {
+		layerPrefix := detectLayerFromText(p)
+		fmt.Printf("    %s%s%s\n", layerPrefix, p, colorReset)
+	}
+
+	// Stack trace
+	frames := faults.Stack(err)
+	if len(frames) > 0 {
+		fmt.Printf("  %sstack:%s\n", colorCyan, colorReset)
+		for _, pc := range frames {
+			f := faults.Frame(pc)
+			fmt.Printf("    %s:%d  %s\n", f.File(), f.Line(), f.Function())
+		}
+	}
+}
+
+// Try to detect a layer prefix based on the error text
+func detectLayerFromText(text string) string {
+	for _, l := range layers {
+		if strings.Contains(strings.ToLower(text), l.name) {
+			return colorForLayer(l.name) + l.name + " → "
+		}
+	}
+	return ""
+}
+
+// ------------------------------------------------------------
 // Prefix logic (optimized)
 // ------------------------------------------------------------
 
 func callerFrame() (runtime.Frame, bool) {
 	pcs := make([]uintptr, 1)
-	// Skip slog internals + handler
 	n := runtime.Callers(5, pcs)
 	if n == 0 {
 		return runtime.Frame{}, false
