@@ -1,26 +1,79 @@
 # 🧰 Toolkit v2
-A lightweight utility library for Go projects, designed to simplify common tasks across JSON handling, file operations, validation, encryption, and temporal types. Built for clarity, composability, and production-grade reliability.
+A lightweight utility library for Go projects, designed to simplify common tasks across JSON handling, file operations, validation, encryption, temporal types — and now production‑grade error handling and logging.
+Built for clarity, composability, and long‑term maintainability.
+
 
 ## ✨ Features
 
 ### ⚙️ Core Utilities
-- [X] Read JSON
-- [X] Write JSON
-- [X] Error JSON takes an error and optionally a status code, and sends a JSON error message
-- [X] Handle Error wraps ErrorJSON and writes to the logger on failure
-- [X] Upload a file to a specified directory
-- [X] Download a static file
-- [X] Get a random string of length n
-- [X] Post JSON to a remote service
-- [X] Write XML
-- [X] Create a directory, including all parent directories, if it does not already exist
-- [X] Create a URL safe slug from a string
-- [X] Validation utilities
-- [X] Encrypt and Decrypt capability
+- [X] Read & write JSON
+- [X] Error JSON responses with optional status codes
+- [X] Unified error handling helper (HandleError)
+- [X] File upload & static file download
+- [X] Random string generation
+- [X] HTTP JSON POST helper
+- [X] XML writer
+- [X] Directory creation utilities
+- [X] URL‑safe slug generation
+- [X] Validation helpers
+- [X] Encryption & decryption utilities
 
-### 🕒 Temporal Types
-- [X] DateOnly struct (type) with JSON and SQL value & scan support
-- [X] TimeOnly struct (type) with JSON and SQL value & scan support
+🧱 Faults — Structured Errors With Stack Traces
+Toolkit v2 includes a lightweight but powerful error system designed for real‑world services.
+Key capabilities
+- [X] Automatic stack capture at the point of failure
+- [X] Context‑rich error wrapping (faults.Wrap)
+- [X] Annotation without stack pollution (faults.Annotate)
+- [X] Root‑cause extraction (faults.Root)
+- [X] Stack inspection (faults.Stack)
+- [X] Pretty stack formatting with %+v
+- [X] Drop‑in compatibility with errors.Is and errors.As
+
+#### Example
+```go
+if err != nil {
+    return faults.Wrap(err, "repo: failed to insert user")
+}
+```
+
+To attach a stack to a foreign error:
+```go
+return faults.WithStack(err)
+```
+
+To add context without changing the origin:
+```go
+return faults.Annotate(err, "service: user creation failed")
+```
+
+🖨️ Pretty Logging Integration
+Toolkit v2 includes development‑friendly slog handlers that automatically detect faults.Error values and print:
+- [X] the full error chain
+- [X] the captured stack trace
+- [X] file + line + function for each frame
+
+```markdown
+```text
+ERROR 2026-04-02T14:14:29+02:00 failed to accept relationship request
+err: repo: failed to insert relationship: ERROR: duplicate key...
+stack:
+    /internal/repo/relationship_repo.go:56  (*RelationshipRepo).Insert
+    /internal/services/relationship_service.go:37  (*RelationshipService).Add
+...
+```
+
+🕒 Temporal Types
+Toolkit v2 includes two production‑ready temporal primitives:
+DateOnly
+TimeOnly
+Both provide:
+- [X] JSON marshalling/unmarshalling
+- [X] SQL scanning & value support
+- [X] Nullable semantics
+- [X] Formatting & comparison helpers
+
+Designed to avoid zero‑value ambiguity while remaining ergonomic.
+
 
 ### 📦 Installation
 
