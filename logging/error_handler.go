@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/fouched/toolkit/v2/errors"
+	"github.com/fouched/toolkit/v2/faults"
 )
 
 type ErrorHandler struct {
@@ -24,10 +24,10 @@ func (h *ErrorHandler) Handle(ctx context.Context, r slog.Record) error {
 				newRecord.Add("err", err.Error())
 
 				// Add formatted stack frames
-				frames := errors.Stack(err)
+				frames := faults.Stack(err)
 				formatted := make([]string, len(frames))
 				for i, pc := range frames {
-					f := errors.Frame(pc)
+					f := faults.Frame(pc)
 					formatted[i] = fmt.Sprintf("%+v", f)
 				}
 				newRecord.Add("stack", formatted)

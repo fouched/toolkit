@@ -1,4 +1,4 @@
-package errors
+package faults
 
 import (
 	"errors"
@@ -6,13 +6,16 @@ import (
 	"runtime"
 )
 
+var Is = errors.Is
+var As = errors.As
+
 type Error struct {
 	msg   string
 	cause error
 	stack []uintptr
 }
 
-func New(msg string) error {
+func NewFault(msg string) error {
 	return &Error{
 		msg:   msg,
 		stack: callers(),
@@ -50,6 +53,39 @@ func WithStack(err error) error {
 		msg:   err.Error(),
 		cause: err,
 		stack: callers(),
+	}
+}
+
+func Root(err error) error {
+	for {
+		unwrapper, ok := err.(interface{ Unwrap() error })
+		if !ok {
+			return err
+		}
+		next := unwrapper.Unwrap()
+		if next == nil {
+			return err
+		}
+		err = next
+	}
+}
+
+func HasStack(err error) bool {
+	var e *Error
+	return errors.As(err, &e)
+}
+
+// Annotate adds contextual information to an existing error without
+// capturing a new stack trace. A nil stack indicates that the original
+// error's stack (if any) is preserved and no new origin is recorded.
+func Annotate(err error, msg string) error {
+	if err == nil {
+		return nil
+	}
+	return &Error{
+		msg:   msg,
+		cause: err,
+		stack: nil, // no new stack captured
 	}
 }
 

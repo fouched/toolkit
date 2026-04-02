@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/fouched/toolkit/v2/errors"
+	"github.com/fouched/toolkit/v2/faults"
 )
 
 type PrettyDevHandler struct{}
@@ -38,11 +38,11 @@ func (h *PrettyDevHandler) Handle(ctx context.Context, r slog.Record) error {
 				fmt.Printf("  %serr:%s %s\n", colorRed, colorReset, err.Error())
 
 				// Stack
-				frames := errors.Stack(err)
+				frames := faults.Stack(err)
 				if len(frames) > 0 {
 					fmt.Printf("  %sstack:%s\n", colorCyan, colorReset)
 					for _, pc := range frames {
-						f := errors.Frame(pc)
+						f := faults.Frame(pc)
 						fmt.Printf("    %s:%d  %s\n", f.File(), f.Line(), f.Function())
 					}
 				}
