@@ -68,22 +68,32 @@ func (h *PrettyDevHandler) WithGroup(name string) slog.Handler {
 }
 
 // ------------------------------------------------------------
-// Pretty error rendering
+// Pretty error rendering (layer-aware)
 // ------------------------------------------------------------
 
 func printPrettyError(err error) {
 	fmt.Printf("  %serr:%s\n", colorRed, colorReset)
 
-	// Split error chain on ": "
+	// Split error chain
 	parts := strings.Split(err.Error(), ": ")
 
-	for _, p := range parts {
-		layerPrefix := detectLayerFromText(p)
-		fmt.Printf("    %s%s%s\n", layerPrefix, p, colorReset)
+	// Stack frames (top to bottom)
+	frames := faults.Stack(err)
+
+	// Print each error segment with the correct layer prefix
+	for i, p := range parts {
+		var prefix string
+
+		// Match segment to frame if possible
+		if i < len(frames) {
+			f := faults.Frame(frames[i])
+			prefix = prefixForPath(f.File())
+		}
+
+		fmt.Printf("    %s%s%s\n", prefix, p, colorReset)
 	}
 
-	// Stack trace
-	frames := faults.Stack(err)
+	// Print stack trace
 	if len(frames) > 0 {
 		fmt.Printf("  %sstack:%s\n", colorCyan, colorReset)
 		for _, pc := range frames {
@@ -93,18 +103,8 @@ func printPrettyError(err error) {
 	}
 }
 
-// Try to detect a layer prefix based on the error text
-func detectLayerFromText(text string) string {
-	for _, l := range layers {
-		if strings.Contains(strings.ToLower(text), l.name) {
-			return colorForLayer(l.name) + l.name + " → "
-		}
-	}
-	return ""
-}
-
 // ------------------------------------------------------------
-// Prefix logic (optimized)
+// Prefix logic (optimized, allocation-free)
 // ------------------------------------------------------------
 
 func callerFrame() (runtime.Frame, bool) {
@@ -118,14 +118,15 @@ func callerFrame() (runtime.Frame, bool) {
 }
 
 func prefixForFrame(f runtime.Frame) string {
-	path := f.File
+	return prefixForPath(f.File)
+}
 
+func prefixForPath(path string) string {
 	for _, l := range layers {
 		if strings.Contains(path, l.needle) {
-			return colorForLayer(l.name) + l.name + " → " + colorReset
+			return colorForLayer(l.name) + l.name + " → "
 		}
 	}
-
 	return ""
 }
 
