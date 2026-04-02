@@ -53,7 +53,6 @@ Toolkit v2 includes development‑friendly slog handlers that automatically dete
 - [X] file + line + function for each frame
 
 ```markdown
-```text
 ERROR 2026-04-02T14:14:29+02:00 failed to accept relationship request
 err: repo: failed to insert relationship: ERROR: duplicate key...
 stack:
