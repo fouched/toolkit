@@ -8,11 +8,16 @@ import (
 	"github.com/fouched/toolkit/v2/faults"
 )
 
-type ErrorHandler struct {
+// ProdHandler is the production logging handler.
+// It ensures errors are logged with message + stack frames,
+// while keeping all other attributes structured and clean.
+type ProdHandler struct {
 	slog.Handler
 }
 
-func (h *ErrorHandler) Handle(ctx context.Context, r slog.Record) error {
+var ProdLevel = new(slog.LevelVar)
+
+func (h *ProdHandler) Handle(ctx context.Context, r slog.Record) error {
 	// Build a new record with the same metadata
 	newRecord := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
 

@@ -46,3 +46,12 @@ func colorForLevel(level slog.Level) string {
 		return colorReset
 	}
 }
+
+// ParseLevel converts a string like "debug" or "info" into slog.Level.
+func ParseLevel(s string) (slog.Level, error) {
+	var lvl slog.Level
+	if err := lvl.UnmarshalText([]byte(s)); err != nil {
+		return slog.LevelInfo, err
+	}
+	return lvl, nil
+}
