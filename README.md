@@ -7,6 +7,7 @@ Built for clarity, composability, and long‑term maintainability.
 
 ### ⚙️ Core Utilities
 - [X] Logging - with structured logging for prod and easy to read logging for development
+- [X] Faults — Structured Errors With Stack Traces
 - [X] Read & write JSON
 - [X] Error JSON responses with optional status codes
 - [X] Unified error handling helper (HandleError)
@@ -18,7 +19,6 @@ Built for clarity, composability, and long‑term maintainability.
 - [X] URL‑safe slug generation
 - [X] Validation helpers
 - [X] Encryption & decryption utilities
-- 🧱 Faults — Structured Errors With Stack Traces
 
 ### 📦 Installation
 
