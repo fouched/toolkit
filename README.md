@@ -81,7 +81,7 @@ Both provide:
 
 Designed to avoid zero‑value ambiguity while remaining ergonomic.
 
-### 📅 Temporal Types Philosophy
+#### 📅 Temporal Types Philosophy
 The DateOnly and TimeOnly types are designed to:
 - Represent nullable date/time values
 - Integrate seamlessly with JSON, SQL, and domain logic
