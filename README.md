@@ -18,9 +18,13 @@ Built for clarity, composability, and long‑term maintainability.
 - [X] URL‑safe slug generation
 - [X] Validation helpers
 - [X] Encryption & decryption utilities
+- 🧱 Faults — Structured Errors With Stack Traces
 
-🧱 Faults — Structured Errors With Stack Traces
+### 📦 Installation
 
+`go get -u github.com/fouched/toolkit/v2`
+
+### ⚠️ Error handling
 Toolkit v2 includes a lightweight but powerful error system designed for real‑world services.
 Key capabilities
 - [X] Automatic stack capture at the point of failure
@@ -77,14 +81,11 @@ Both provide:
 
 Designed to avoid zero‑value ambiguity while remaining ergonomic.
 
-
-### 📦 Installation
-
-`go get -u github.com/fouched/toolkit/v2`
-
 ### 📅 Temporal Types Philosophy
 The DateOnly and TimeOnly types are designed to:
 - Represent nullable date/time values
 - Integrate seamlessly with JSON, SQL, and domain logic
 - Avoid zero-value ambiguity by using *time.Time internally
 - Provide comparison, conversion, and formatting utilities
+
+
