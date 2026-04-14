@@ -1,5 +1,5 @@
 # 🧰 Toolkit v2
-A lightweight utility library for Go projects, designed to simplify logging, common tasks across JSON handling, file operations, validation, encryption, temporal types — and now production‑grade error handling and logging.
+A lightweight utility library for Go projects, designed to simplify logging, common tasks across JSON handling, file operations, validation, encryption, temporal types — and now production‑grade error handling.
 Built for clarity, composability, and long‑term maintainability.
 
 
