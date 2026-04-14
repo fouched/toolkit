@@ -24,7 +24,7 @@ Built for clarity, composability, and long‑term maintainability.
 
 `go get -u github.com/fouched/toolkit/v2`
 
-### ⚠️ Error handling
+#### ⚠️ Error handling
 Toolkit v2 includes a lightweight but powerful error system designed for real‑world services.
 Key capabilities
 - [X] Automatic stack capture at the point of failure
