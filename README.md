@@ -6,7 +6,7 @@ Built for clarity, composability, and long‑term maintainability.
 ## ✨ Features
 
 ### ⚙️ Core Utilities
-
+- [X] Logging - with structured logging for prod and easy to read logging for development
 - [X] Read & write JSON
 - [X] Error JSON responses with optional status codes
 - [X] Unified error handling helper (HandleError)
