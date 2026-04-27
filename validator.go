@@ -3,15 +3,13 @@ package toolkit
 import (
 	"fmt"
 	"net/http"
-	"net/url"
-	"regexp"
+	"net/mail"
 	"strconv"
 	"strings"
 	"time"
 )
 
 type Validation struct {
-	Data   url.Values
 	Errors map[string]string
 }
 
@@ -32,9 +30,8 @@ func (e ValidationError) Error() string {
 
 // Validator creates an instance of a Validation based on form values.
 // You can pass nil to this constructor to use the validation functions without an Http form
-func Validator(data url.Values) *Validation {
+func Validator() *Validation {
 	return &Validation{
-		Data:   data,
 		Errors: make(map[string]string),
 	}
 }
@@ -107,15 +104,15 @@ func (v *Validation) IsDateISO(field Field) {
 
 // IsEmail checks if a Field contains a valid email and adds an error if result is false
 func (v *Validation) IsEmail(field Field) {
-	rxEmail := regexp.MustCompile("^(((([a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_` w2`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+(\\.([a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+)*)|((\\x22)((((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(([\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]|\\x21|[\\x23-\\x5b]|[\\x5d-\\x7e]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(\\([\\x01-\\x09\\x0b\\x0c\\x0d-\\x7f]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}]))))*(((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(\\x22)))@((([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])([a-zA-Z]|\\d|-|\\.|_|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.)+(([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])([a-zA-Z]|\\d|-|_|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.?$")
-	if !rxEmail.MatchString(field.Value) {
+	_, err := mail.ParseAddress(field.Value)
+	if err != nil {
 		v.AddError(field.Name, fmt.Sprintf("%s must be a valid email address", field.Label))
 	}
 }
 
 // NoSpaces checks if a Field contains spaces and adds an error if result is false
 func (v *Validation) NoSpaces(field Field) {
-	if strings.Contains(" ", field.Value) {
+	if strings.Contains(field.Value, " ") {
 		v.AddError(field.Name, fmt.Sprintf("%s does not allow any spaces", field.Label))
 	}
 }

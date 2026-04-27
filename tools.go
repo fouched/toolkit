@@ -28,6 +28,15 @@ type Tools struct {
 	AllowUnknownFields bool
 }
 
+// Validator returns a new Validation instance.
+func (t *Tools) Validator() *Validation {
+	v := &Validation{
+		Errors: make(map[string]string),
+	}
+
+	return v
+}
+
 // RandomString returns a string of random characters of length n
 func (t *Tools) RandomString(n int) string {
 	// old expensive version for reference
