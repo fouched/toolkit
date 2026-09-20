@@ -81,8 +81,8 @@ Sample usage of structure logging with a prod handler:
 // 1. Parse configured log level
 lvl, err := logging.ParseLevel(app.Logging.Level)
 if err != nil {
-// Fallback to INFO but log the issue
-fmt.Printf("Invalid log level %q, defaulting to INFO\n", app.Logging.Level)
+    // Fallback to INFO but log the issue
+    fmt.Printf("Invalid log level %q, defaulting to INFO\n", app.Logging.Level)
     lvl = slog.LevelInfo
 }
 
