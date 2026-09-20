@@ -54,10 +54,17 @@ return faults.Annotate(err, "service: user creation failed")
 
 🖨️ Pretty Logging Integration
 
-Toolkit v2 includes development‑friendly slog handlers that automatically detect faults.Error values and print:
+Toolkit v2 includes a production and development‑friendly slog handler that automatically detect faults, error values and prints:
 - [X] the full error chain
 - [X] the captured stack trace
 - [X] file + line + function for each frame
+
+Sample usage of dev handler:
+```go
+logger := slog.New(logging.NewPrettyDevHandler())
+```
+
+Example output:
 
 ```markdown
 ERROR 2026-04-02T14:14:29+02:00 failed to accept relationship request
@@ -66,6 +73,33 @@ stack:
     /internal/repo/relationship_repo.go:56  (*RelationshipRepo).Insert
     /internal/services/relationship_service.go:37  (*RelationshipService).Add
 ...
+```
+
+
+Sample usage of structure logging with a prod handler:
+```go
+// 1. Parse configured log level
+lvl, err := logging.ParseLevel(app.Logging.Level)
+if err != nil {
+// Fallback to INFO but log the issue
+fmt.Printf("Invalid log level %q, defaulting to INFO\n", app.Logging.Level)
+    lvl = slog.LevelInfo
+}
+
+// 2. Set the global production level
+logging.ProdLevel.Set(lvl)
+
+// 3. Build the JSON handler with dynamic level
+jsonHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+    Level: logging.ProdLevel, 
+})
+
+// 4. Wrap it with ProdHandler
+prodHandler := &logging.ProdHandler{
+    Handler: jsonHandler,
+}
+
+logger = slog.New(prodHandler)
 ```
 
 🕒 Temporal Types
