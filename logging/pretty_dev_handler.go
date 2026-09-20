@@ -42,19 +42,19 @@ func (h *PrettyDevHandler) Handle(ctx context.Context, r slog.Record) error {
 
 	// ATTRIBUTES
 	r.Attrs(func(a slog.Attr) bool {
-		if a.Key == "err" {
-			if err, ok := a.Value.Any().(error); ok {
-				// Print error as a single line (production-aligned)
-				fmt.Printf("  err=%s\n", err.Error())
+		val := a.Value.Any()
 
-				// Pretty stack trace
-				printPrettyStack(err)
-				return true
-			}
+		// If the attribute is an error, handle it
+		if err, ok := val.(error); ok {
+			wrapped := faults.Wrap(err, r.Message)
+
+			fmt.Printf("  err=%s\n", wrapped.Error())
+			printPrettyStack(wrapped)
+			return true
 		}
 
 		// Normal attribute
-		fmt.Printf("  %s=%v\n", a.Key, a.Value.Any())
+		fmt.Printf("  %s=%v\n", a.Key, val)
 		return true
 	})
 
