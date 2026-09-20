@@ -20,6 +20,7 @@ var layers = []layerDef{
 	{"usecase", "/usecase/"},
 	{"http", "/http/"},
 	{"api", "/api/"},
+	{"platform", "/platform/"},
 }
 
 const (

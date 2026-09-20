@@ -121,7 +121,7 @@ func colorForLayer(layer string) string {
 		return colorBlue
 	case "services", "service", "domain", "usecase":
 		return colorCyan
-	case "repo", "repository", "repositories", "store", "persistence":
+	case "repo", "repository", "repositories", "store", "persistence", "platform":
 		return colorGreen
 	default:
 		return colorReset
