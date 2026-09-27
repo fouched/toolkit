@@ -26,20 +26,21 @@ func (h *ProdHandler) Handle(ctx context.Context, r slog.Record) error {
 
 		// Intercept ANY error, regardless of key
 		if err, ok := val.(error); ok {
-			wrapped := faults.Wrap(err, r.Message)
+			var logErr error = err
+			if !faults.HasStack(err) {
+				logErr = faults.WithStack(err)
+			}
 
 			// Add message chain
-			newRecord.Add("err", wrapped.Error())
+			newRecord.Add("err", logErr.Error())
 
 			// Add stack frames
-			frames := faults.Stack(wrapped)
+			frames := faults.Stack(logErr)
 			formatted := make([]string, len(frames))
-			for i, pc := range frames {
-				f := faults.Frame(pc)
-				formatted[i] = fmt.Sprintf("%+v", f)
+			for i, frame := range frames {
+				formatted[i] = fmt.Sprintf("%+v", frame)
 			}
 			newRecord.Add("stack", formatted)
-
 			return true
 		}
 

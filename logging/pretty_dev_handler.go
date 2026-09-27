@@ -44,12 +44,15 @@ func (h *PrettyDevHandler) Handle(ctx context.Context, r slog.Record) error {
 	r.Attrs(func(a slog.Attr) bool {
 		val := a.Value.Any()
 
-		// If the attribute is an error, handle it
 		if err, ok := val.(error); ok {
-			wrapped := faults.Wrap(err, r.Message)
+			// If it doesn't have a stack yet, append one lazily at point of failure logging
+			var logErr error = err
+			if !faults.HasStack(err) {
+				logErr = faults.WithStack(err)
+			}
 
-			fmt.Printf("  err=%s\n", wrapped.Error())
-			printPrettyStack(wrapped)
+			fmt.Printf("  err=%s\n", logErr.Error())
+			printPrettyStack(logErr)
 			return true
 		}
 
@@ -75,16 +78,14 @@ func (h *PrettyDevHandler) WithGroup(name string) slog.Handler {
 // ------------------------------------------------------------
 
 func printPrettyStack(err error) {
-	frames := faults.Stack(err)
+	frames := faults.Stack(err) // Returns []faults.Frame
 	if len(frames) == 0 {
 		return
 	}
 
 	fmt.Printf("  %sstack:%s\n", colorCyan, colorReset)
-
-	for _, pc := range frames {
-		f := faults.Frame(pc)
-		fmt.Printf("    %s:%d  %s\n", f.File(), f.Line(), f.Function())
+	for _, frame := range frames {
+		fmt.Printf("    %s:%d  %s\n", frame.File(), frame.Line(), frame.Function())
 	}
 }
 
